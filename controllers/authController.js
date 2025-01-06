@@ -1,12 +1,14 @@
 const db = require('../config/db');
 const crypto = require('crypto');
 
+// Fungsi untuk memverifikasi password yang dimasukkan dengan yang tersimpan
 const verifyPassword = (password, storedHash) => {
     const [algorithm, iterations, salt, hash] = storedHash.split('$');
     const iterationsCount = parseInt(iterations, 10);
 
     const saltString = salt;
 
+     // Menggunakan pbkdf2Sync untuk menghasilkan hash dari password yang dimasukkan
     const hashedBuffer = crypto.pbkdf2Sync(
         password,
         saltString,
@@ -15,10 +17,9 @@ const verifyPassword = (password, storedHash) => {
         'sha256'
     );
 
+    // Membandingkan hash yang dihitung dengan yang tersimpan
     const hashedPassword = hashedBuffer.toString('base64');
 
-    console.log(hashedPassword)
-    console.log(hash)
     return hashedPassword === hash;
 };
 
@@ -27,7 +28,7 @@ const login = async (request, h) => {
 
     try {
         const result = await db.execute(
-            'SELECT id, first_name, last_name, password, is_active, last_login FROM auth_user WHERE username = ?',
+            'SELECT id, username, first_name, last_name, password, is_active, last_login FROM auth_user WHERE username = ?',
             [username]
         );
 
@@ -61,12 +62,12 @@ const login = async (request, h) => {
         const role = roleRows.length > 0 ? roleRows[0].role : 'Unknown';
 
         await db.execute(
-            'UPDATE auth_user SET last_login = ? WHERE id = ?',
-            [new Date(), user.id]
+            'UPDATE auth_user SET last_login = NOW(6) WHERE id = ?',
+            [user.id]
         );
         const fullName = `${user.first_name} ${user.last_name}`;
 
-        return h.response({ success: true, userId: user.id, name: fullName, role: role }).code(200);
+        return h.response({ success: true, userId: user.id, username: username, name: fullName, role: role }).code(200);
     } catch (error) {
         console.error(error);
         return h.response({ message: 'Internal server error' }).code(500);
