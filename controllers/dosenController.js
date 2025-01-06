@@ -9,7 +9,7 @@ const getDosenByNip = async (request, h) => {
     try {
         const [rows] = await db.execute(
             `SELECT
-                id, nip, nama, foto, alamat, no_wa, jenis_kelamin, 
+                webapp_dosen.id, nip, nama, foto, alamat, no_wa, jenis_kelamin, 
                 webapp_dosen.email,
                 webapp_kabupaten.nama_kabupaten as kabupaten,
                 webapp_provinsi.nama_provinsi as provinsi,
