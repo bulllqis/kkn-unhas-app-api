@@ -68,7 +68,7 @@ const getMahasiswaByNim = async (request, h) => {
 
 const updateMahasiswa = async (request, h) => {
     const { id } = request.params;
-    const { email, no_wa } = request.payload;
+    const { email, no_wa, alamat } = request.payload;
     const fotoFile = request.payload.foto;
 
     try {
@@ -111,9 +111,9 @@ const updateMahasiswa = async (request, h) => {
         // Update data mahasiswa di database
         const [result] = await db.execute(
             `UPDATE webapp_mahasiswa
-             SET email = ?, no_wa = ?, foto = ?
+             SET email = ?, no_wa = ?, alamat = ?, foto = ?
              WHERE id = ?`,
-            [email, no_wa, newFotoUrl, id]
+            [email, no_wa, alamat, newFotoUrl, id]
         );
 
         if (result.affectedRows === 0) {

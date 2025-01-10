@@ -4,8 +4,9 @@ const { uploadBeritaToCloudinary } = require('./uploadBeritaController');
 const getBerita = async (request, h) => {
     try {
         const [rows] = await db.execute(
-            `SELECT id, created_at, judul, slug, isi, foto, \`show\`, created_by 
+            `SELECT id, created_at, judul, foto
              FROM webapp_berita 
+             WHERE \`show\` = 1
              ORDER BY created_at DESC`
         );
 
@@ -21,7 +22,7 @@ const getBeritaById = async (request, h) => {
 
     try {
         const [rows] = await db.execute(
-            `SELECT id, created_at, judul, slug, isi, foto, \`show\`, created_by 
+            `SELECT id, created_at, judul, isi, foto 
              FROM webapp_berita 
              WHERE id = ?`,
             [id]
