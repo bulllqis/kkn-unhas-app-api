@@ -40,7 +40,7 @@ const getDosenByNip = async (request, h) => {
 
 const updateDosen = async (request, h) => {
     const { id } = request.params;
-    const { email, no_wa } = request.payload;
+    const { email, no_wa, alamat } = request.payload;
     const fotoFile = request.payload.foto;
 
     try {
@@ -81,9 +81,9 @@ const updateDosen = async (request, h) => {
 
         const [result] = await db.execute(
             `UPDATE webapp_dosen
-            SET email = ?, no_wa = ?, foto = ?
+            SET email = ?, no_wa = ?, alamat = ?,  foto = ?
             WHERE id = ?`,
-            [email, no_wa, newFotoUrl, id]
+            [email, no_wa, alamat, newFotoUrl, id]
         );
 
         if (result.affectedRows === 0) {
