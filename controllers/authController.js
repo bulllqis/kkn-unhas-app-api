@@ -35,18 +35,18 @@ const login = async (request, h) => {
         const rows = result[0] && Array.isArray(result[0]) ? result[0] : [];
 
         if (rows.length === 0) {
-            return h.response({ message: 'User not found' }).code(404);
+            return h.response({ message: 'Pengguna Tidak Ditemukan' }).code(404);
         }
 
         const user = rows[0];
 
         if (!user.is_active) {
-            return h.response({ message: 'Account is not active' }).code(403);
+            return h.response({ message: 'Akun Tidak Aktif' }).code(403);
         }
 
         const passwordMatch = verifyPassword(password, user.password);
         if (!passwordMatch) {
-            return h.response({ message: 'Invalid password' }).code(401);
+            return h.response({ message: 'Password Salah' }).code(401);
         }
 
         const roleResult = await db.execute(

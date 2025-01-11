@@ -181,7 +181,6 @@ const deleteLogbook = async (request, h) => {
 
             if (!publicId) {
                 console.error('Gagal mengekstrak publicId:', fotoUrl);
-                return h.response({ message: 'Gagal menghapus foto dari Cloudinary' }).code(500);
             }
 
             // Hapus dari Cloudinary
