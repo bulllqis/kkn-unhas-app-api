@@ -58,7 +58,7 @@ const logbookRoutes = [
         handler: logbookController.getLogbookByParameter,
     },
     {
-        method: 'PUT',
+        method: 'PATCH',
         path: '/logbook/{id}',
         handler: logbookController.editLogbook,
         options: {
@@ -76,7 +76,7 @@ const logbookRoutes = [
         handler: logbookController.deleteLogbook,
     },
     {
-        method: 'PUT',
+        method: 'PATCH',
         path: '/logbook/dosen/{id}',
         handler: logbookController.editLogbookByDosen,
     },
