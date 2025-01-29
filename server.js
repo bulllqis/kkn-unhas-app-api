@@ -1,7 +1,7 @@
 const Hapi = require('@hapi/hapi');
 const routes = require('./routes/routes');
 require('dotenv').config();
-const { initializeWebSocketServer } = require('../controllers/logbookController');
+const { initializeWebSocketServer } = require('./controllers/logbookController');
 
 
 const init = async () => {
