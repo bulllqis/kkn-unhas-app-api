@@ -1,7 +1,36 @@
+const WebSocket = require('ws');
 const db = require('../config/db');
-const {uploadLogbookToCloudinary} = require('./uploadLogbookController');
-const cloudinary = require('../config/cloudinary'); 
+const { uploadLogbookToCloudinary } = require('./uploadLogbookController');
+const cloudinary = require('../config/cloudinary');
 
+let wss;
+
+function initializeWebSocketServer(server) {
+    wss = new WebSocket.Server({ server });
+    
+    wss.on('connection', (ws, req) => {
+        const userId = req.headers['x-user-id']; 
+        ws.userId = userId;
+    });
+}
+
+function sendNotification(userId, message) {
+    if (wss) {
+        wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN && client.userId === userId) {
+                client.send(JSON.stringify({ message }));
+            }
+        });
+    }
+}
+
+async function addNotification(userId, logbookId, message) {
+    await db.execute(
+        `INSERT INTO webapp_notifikasi (user_id, logbook_id, pesan, status, created_at)
+         VALUES (?, ?, ?, 'baru', NOW(6))`,
+        [userId, logbookId, message]
+    );
+}
 
 const addLogbook = async (request, h) => {
     const { nim, judul, tanggal, jam_mulai, jam_selesai, deskripsi } = request.payload;
@@ -26,6 +55,19 @@ const addLogbook = async (request, h) => {
             [logbookId, fotoUrl] 
         );
         
+
+        const [dosen] = await db.execute(
+            `SELECT dpk_id
+            FROM webapp_tematik 
+            JOIN webapp_anggotatematik ON webapp_tematik.kode_tematik = webapp_anggotatematik.kode_tematik_id
+            WHERE webapp_anggotatematik.nim_id = ?`, [nim]);
+
+        if (dosen.length > 0) {
+            const dosenId = dosen[0].dosen_id;
+            const message = `Mahasiswa dengan NIM ${nim} menambahkan logbook baru.`;
+            await addNotification(dosenId, logbookId, message);
+            sendNotification(dosenId, message);
+        }
 
         return h.response({ success: true, logbookId }).code(201);
     } catch (error) {
@@ -211,6 +253,19 @@ const editLogbookByDosen = async (request, h) => {
             [komentar, status, id]
         );
 
+        
+        const [logbookData] = await db.execute(
+            `SELECT nim_id FROM webapp_logbook WHERE id = ?`,
+            [id]
+        );
+
+        if (logbookData.length > 0) {
+            const nim = logbookData[0].nim_id;
+            const message = `Logbook Anda telah disetujui`;
+            await addNotification(nim, message);
+            sendNotification(nim, message);
+        }
+
         if (result.affectedRows === 0) {
             return h.response({ message: 'Logbook tidak ditemukan' }).code(404);
         }
@@ -222,5 +277,33 @@ const editLogbookByDosen = async (request, h) => {
     }
 };
 
+const getNotificationsByUserId = async (request, h) => {
+    const { userId } = request.params;
 
-module.exports = { addLogbook, getLogbookByParameter, editLogbook, deleteLogbook, editLogbookByDosen };
+    try {
+        const [notifications] = await db.execute(
+            `SELECT id, pesan, status, created_at FROM webapp_notifikasi WHERE user_id = ? ORDER BY created_at DESC`,
+            [userId]
+        );
+
+        return h.response(notifications).code(200);
+    } catch (error) {
+        console.error('Error:', error);
+        return h.response({ message: 'Internal server error' }).code(500);
+    }
+};
+
+const markNotificationAsRead = async (request, h) => {
+    const { id } = request.params;
+
+    try {
+        await db.execute(`UPDATE webapp_notifikasi SET status = 'dibaca' WHERE id = ?`, [id]);
+        return h.response({ success: true }).code(200);
+    } catch (error) {
+        console.error('Error:', error);
+        return h.response({ message: 'Internal server error' }).code(500);
+    }
+};
+
+module.exports = { addLogbook, getLogbookByParameter, editLogbook, deleteLogbook, editLogbookByDosen,
+                    getNotificationsByUserId, markNotificationAsRead, initializeWebSocketServer, };

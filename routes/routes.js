@@ -130,4 +130,17 @@ const beritaRoutes = [
     
 ];
 
-module.exports = [...authRoutes, ...mahasiswaRoutes, ...logbookRoutes, ...dosenRoutes, ...beritaRoutes];
+const notificationRoutes = [
+    {
+        method: 'GET',
+        path: '/notifikasi/{userId}',
+        handler: logbookController.getNotificationsByUserId, 
+    },
+    {
+        method: 'PATCH',
+        path: '/notifikasi/{id}',
+        handler: logbookController.markNotificationAsRead,
+    },
+];
+
+module.exports = [...authRoutes, ...mahasiswaRoutes, ...logbookRoutes, ...dosenRoutes, ...beritaRoutes, ...notificationRoutes];

@@ -151,10 +151,6 @@ const getMahasiswaByDpkNip = async (request, h) => {
             [nip]
         );
 
-        if (!rows || rows.length === 0) {
-            return h.response({ message: 'Tidak ada mahasiswa yang diawasi oleh DPK dengan NIP ini' }).code(404);
-        }
-
         return h.response(rows).code(200);
     } catch (error) {
         console.error('Error:', error);

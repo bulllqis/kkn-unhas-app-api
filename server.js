@@ -1,6 +1,8 @@
 const Hapi = require('@hapi/hapi');
 const routes = require('./routes/routes');
 require('dotenv').config();
+const { initializeWebSocketServer } = require('../controllers/logbookController');
+
 
 const init = async () => {
     const server = Hapi.server({
@@ -14,7 +16,7 @@ const init = async () => {
     });
 
     server.route(routes);
-
+    initializeWebSocketServer(server.listener);
     await server.start();
     console.log('Server running on %s', server.info.uri);
 };
