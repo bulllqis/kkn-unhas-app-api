@@ -63,7 +63,7 @@ const addLogbook = async (request, h) => {
             WHERE webapp_anggotatematik.nim_id = ?`, [nim]);
 
         if (dosen.length > 0) {
-            const dosenId = dosen[0].dosen_id;
+            const dosenId = dosen[0].dpk_id;
             const message = `Mahasiswa dengan NIM ${nim} menambahkan logbook baru.`;
             await addNotification(dosenId, logbookId, message);
             sendNotification(dosenId, message);
@@ -262,7 +262,7 @@ const editLogbookByDosen = async (request, h) => {
         if (logbookData.length > 0) {
             const nim = logbookData[0].nim_id;
             const message = `Logbook Anda telah disetujui`;
-            await addNotification(nim, message);
+            await addNotification(nim, id, message);
             sendNotification(nim, message);
         }
 
