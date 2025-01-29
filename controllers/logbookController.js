@@ -9,9 +9,10 @@ function initializeWebSocketServer(server) {
     wss = new WebSocket.Server({ server });
     
     wss.on('connection', (ws, req) => {
-        const userId = req.headers['x-user-id']; 
-        ws.userId = userId;
+        const params = new URLSearchParams(req.url.split('?')[1]);
+        ws.userId = params.get('userId'); // Simpan userId
     });
+    
 }
 
 function sendNotification(userId, message) {
