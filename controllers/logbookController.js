@@ -28,7 +28,7 @@ function sendNotification(userId, message) {
 async function addNotification(userId, logbookId, message) {
     await db.execute(
         `INSERT INTO webapp_notifikasi (user_id, logbook_id, pesan, status, created_at)
-         VALUES (?, ?, ?, 'baru', NOW(6))`,
+         VALUES (?, ?, ?, 'belum dibaca', NOW(6))`,
         [userId, logbookId, message]
     );
 }
