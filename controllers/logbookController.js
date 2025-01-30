@@ -283,7 +283,7 @@ const getNotificationsByUserId = async (request, h) => {
 
     try {
         const [notifications] = await db.execute(
-            `SELECT id, pesan, status, created_at FROM webapp_notifikasi WHERE user_id = ? ORDER BY created_at DESC`,
+            `SELECT * FROM webapp_notifikasi WHERE user_id = ? ORDER BY created_at DESC`,
             [userId]
         );
 
