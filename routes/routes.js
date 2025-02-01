@@ -10,6 +10,11 @@ const authRoutes = [
         path: '/login',
         handler: authController.login,
     },
+    {
+        method: 'PATCH',
+        path: '/update-password/{userId}',
+        handler: authController.updatePassword,
+    },
 ];
 
 const mahasiswaRoutes = [

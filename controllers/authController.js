@@ -74,4 +74,48 @@ const login = async (request, h) => {
     }
 };
 
-module.exports = { login };
+const updatePassword = async (request, h) => {
+    const { userId} = request.params;
+    const { oldPassword, newPassword, confirmPassword } = request.payload;
+
+    if (newPassword !== confirmPassword) {
+        return h.response({ message: 'Konfirmasi password tidak cocok' }).code(400);
+    }
+
+    try {
+        const result = await db.execute(
+            'SELECT password FROM auth_user WHERE id = ?',
+            [userId]
+        );
+
+        const rows = result[0] && Array.isArray(result[0]) ? result[0] : [];
+
+        if (rows.length === 0) {
+            return h.response({ message: 'Pengguna tidak ditemukan' }).code(404);
+        }
+
+        const user = rows[0];
+
+        if (!verifyPassword(oldPassword, user.password)) {
+            return h.response({ message: 'Password lama salah' }).code(401);
+        }
+
+        const salt = crypto.randomBytes(16).toString('base64');
+        const iterations = 100000;
+        const hashedBuffer = crypto.pbkdf2Sync(newPassword, salt, iterations, 32, 'sha256');
+        const newHashedPassword = `sha256$${iterations}$${salt}$${hashedBuffer.toString('base64')}`;
+
+        await db.execute(
+            'UPDATE auth_user SET password = ? WHERE id = ?',
+            [newHashedPassword, userId]
+        );
+
+        return h.response({ success: true, message: 'Password berhasil diperbarui' }).code(200);
+    } catch (error) {
+        console.error(error);
+        return h.response({ message: 'Internal server error' }).code(500);
+    }
+};
+
+module.exports = { login, updatePassword };
+

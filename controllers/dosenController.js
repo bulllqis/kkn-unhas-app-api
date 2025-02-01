@@ -9,19 +9,39 @@ const getDosenByNip = async (request, h) => {
     try {
         const [rows] = await db.execute(
             `SELECT
-                webapp_dosen.id, nip, nama, foto, alamat, no_wa, jenis_kelamin, 
+                webapp_dosen.id, nip, nik, nama, foto, alamat, no_wa, jenis_kelamin, riwayat_penyakit, kegiatan_sementara,
                 webapp_dosen.email,
-                webapp_kabupaten.nama_kabupaten as kabupaten,
-                webapp_provinsi.nama_provinsi as provinsi,
-                webapp_kecamatan.nama_kecamatan as kecamatan,
+                kabupaten_domisili.nama_kabupaten AS kabupaten,
+                webapp_provinsi.nama_provinsi AS provinsi,
+                kecamatan_domisili.nama_kecamatan AS kecamatan,
+                desa_domisili.nama_desa AS desa,
                 webapp_prodi.nama_prodi as program_studi,
-                webapp_fakultas.nama_fakultas as fakultas
+                webapp_fakultas.nama_fakultas as fakultas,
+                webapp_tematik.nama_tematik AS tematik,
+                kabupaten_kkn.nama_kabupaten AS kabupaten_tematik,
+                kecamatan_kkn.nama_kecamatan AS kecamatan_tematik,
+                desa_kkn.nama_desa AS desa_tematik
             FROM webapp_dosen
-            LEFT JOIN webapp_kabupaten ON webapp_dosen.kabupaten_id = webapp_kabupaten.kode_kabupaten
-            LEFT JOIN webapp_prodi ON webapp_dosen.prodi_id = webapp_prodi.kode_prodi
-            LEFT JOIN webapp_fakultas ON webapp_dosen.fakultas_id = webapp_fakultas.kode_fakultas
-            LEFT JOIN webapp_provinsi ON webapp_dosen.provinsi_id = webapp_provinsi.id
-            LEFT JOIN webapp_kecamatan ON webapp_dosen.kecamatan_id = webapp_kecamatan.kode_kecamatan
+            LEFT JOIN webapp_kabupaten AS kabupaten_domisili 
+                ON webapp_dosen.kabupaten_id = kabupaten_domisili.kode_kabupaten 
+            LEFT JOIN webapp_prodi 
+                ON webapp_dosen.prodi_id = webapp_prodi.kode_prodi
+            LEFT JOIN webapp_fakultas 
+                ON webapp_dosen.fakultas_id = webapp_fakultas.kode_fakultas
+            LEFT JOIN webapp_tematik 
+                ON webapp_dosen.nip = webapp_tematik.dpk_id
+            LEFT JOIN webapp_provinsi 
+                ON webapp_dosen.provinsi_id = webapp_provinsi.id
+            LEFT JOIN webapp_kecamatan AS kecamatan_domisili 
+                ON webapp_dosen.kecamatan_id = kecamatan_domisili.kode_kecamatan
+            LEFT JOIN webapp_desa AS desa_domisili 
+                ON webapp_dosen.desa_id = desa_domisili.kode_desa
+            LEFT JOIN webapp_kabupaten AS kabupaten_kkn
+                ON webapp_tematik.kabupaten_id = kabupaten_kkn.kode_kabupaten
+            LEFT JOIN webapp_kecamatan AS kecamatan_kkn
+                ON webapp_tematik.kecamatan_id = kecamatan_kkn.kode_kecamatan
+            LEFT JOIN webapp_desa AS desa_kkn
+                ON webapp_tematik.desa_id = desa_kkn.kode_desa
             WHERE webapp_dosen.nip = ?`,
             [nip]
         );
@@ -40,7 +60,11 @@ const getDosenByNip = async (request, h) => {
 
 const updateDosen = async (request, h) => {
     const { id } = request.params;
-    const { email, no_wa, alamat } = request.payload;
+    const { 
+        nik, email, no_wa, alamat, riwayat_penyakit, kegiatan_sementara, 
+        kabupaten_id, kecamatan_id, desa_id, provinsi_id 
+    } = request.payload;
+
     const fotoFile = request.payload.foto;
 
     try {
@@ -80,10 +104,14 @@ const updateDosen = async (request, h) => {
         }
 
         const [result] = await db.execute(
-            `UPDATE webapp_dosen
-            SET email = ?, no_wa = ?, alamat = ?,  foto = ?
+            `UPDATE webapp_dosen SET
+            nik = ?, alamat = ?, no_wa = ?, email = ?, riwayat_penyakit = ?, kegiatan_sementara = ?,
+            kabupaten_id = ?, kecamatan_id = ?, desa_id = ?, provinsi_id = ?, foto = ?
             WHERE id = ?`,
-            [email, no_wa, alamat, newFotoUrl, id]
+            [
+                nik, alamat, no_wa, email, riwayat_penyakit, kegiatan_sementara,
+                kabupaten_id, kecamatan_id, desa_id, provinsi_id, newFotoUrl, id
+            ]
         );
 
         if (result.affectedRows === 0) {

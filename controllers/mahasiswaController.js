@@ -13,6 +13,7 @@ const getMahasiswaByNim = async (request, h) => {
                 webapp_mahasiswa.nim, 
                 webapp_mahasiswa.nama, 
                 webapp_mahasiswa.foto, 
+                webapp_mahasiswa.nik, 
                 webapp_mahasiswa.alamat, 
                 webapp_mahasiswa.no_wa, 
                 webapp_mahasiswa.jenis_kelamin, 
@@ -20,23 +21,37 @@ const getMahasiswaByNim = async (request, h) => {
                 webapp_mahasiswa.wa_ortu, 
                 webapp_mahasiswa.email, 
                 webapp_mahasiswa.lokasi_kkn,
+                webapp_mahasiswa.riwayat_penyakit,
+                webapp_mahasiswa.kegiatan_sementara,
+                webapp_mahasiswa.asuransi,
+                webapp_mahasiswa.pakta,
+                webapp_mahasiswa.surat_izin,
+                webapp_mahasiswa.u_jas_kkn,
                 webapp_gelombangkkn.nomor_gel AS gelombangkkn,
-                webapp_kabupaten.nama_kabupaten AS kabupaten,
+                kabupaten_domisili.nama_kabupaten AS kabupaten,
                 webapp_provinsi.nama_provinsi AS provinsi,
-                webapp_kecamatan.nama_kecamatan AS kecamatan,
+                kecamatan_domisili.nama_kecamatan AS kecamatan,
+                desa_domisili.nama_desa AS desa,
                 webapp_prodi.nama_prodi AS program_studi,
                 webapp_fakultas.nama_fakultas AS fakultas,
+                webapp_tematik.nama_tematik AS tematik,
+                kabupaten_kkn.nama_kabupaten AS kabupaten_tematik,
+                kecamatan_kkn.nama_kecamatan AS kecamatan_tematik,
+                desa_kkn.nama_desa AS desa_tematik,
                 webapp_tematik.dpk_id AS nip_dpk,
+                webapp_dosen.no_wa AS wa_dpk,
                 webapp_dosen.nama AS dpk
             FROM webapp_mahasiswa
             LEFT JOIN webapp_gelombangkkn
                 ON webapp_mahasiswa.kode_angkatan_id = webapp_gelombangkkn.id
-            LEFT JOIN webapp_kabupaten 
-                ON webapp_mahasiswa.kabupaten_id = webapp_kabupaten.kode_kabupaten
+            LEFT JOIN webapp_kabupaten AS kabupaten_domisili
+                ON webapp_mahasiswa.kabupaten_id = kabupaten_domisili.kode_kabupaten
             LEFT JOIN webapp_prodi 
                 ON webapp_mahasiswa.prodi_id = webapp_prodi.kode_prodi
-            LEFT JOIN webapp_kecamatan 
-                ON webapp_mahasiswa.kecamatan_id = webapp_kecamatan.kode_kecamatan
+            LEFT JOIN webapp_kecamatan AS kecamatan_domisili
+                ON webapp_mahasiswa.kecamatan_id = kecamatan_domisili.kode_kecamatan
+            LEFT JOIN webapp_desa AS desa_domisili
+                ON webapp_mahasiswa.desa_id = desa_domisili.kode_desa
             LEFT JOIN webapp_fakultas 
                 ON webapp_mahasiswa.fakultas_id = webapp_fakultas.kode_fakultas
             LEFT JOIN webapp_provinsi 
@@ -49,6 +64,12 @@ const getMahasiswaByNim = async (request, h) => {
                 ON webapp_anggotatematik.kode_tematik_id = webapp_tematik.kode_tematik
             LEFT JOIN webapp_dosen 
                 ON webapp_tematik.dpk_id = webapp_dosen.nip
+            LEFT JOIN webapp_kabupaten AS kabupaten_kkn
+                ON webapp_tematik.kabupaten_id = kabupaten_kkn.kode_kabupaten
+            LEFT JOIN webapp_kecamatan AS kecamatan_kkn
+                ON webapp_tematik.kecamatan_id = kecamatan_kkn.kode_kecamatan
+            LEFT JOIN webapp_desa AS desa_kkn
+                ON webapp_tematik.desa_id = desa_kkn.kode_desa
             WHERE webapp_mahasiswa.nim = ?`,
             [nim]
         );
@@ -68,15 +89,16 @@ const getMahasiswaByNim = async (request, h) => {
 
 const updateMahasiswa = async (request, h) => {
     const { id } = request.params;
-    const { email, no_wa, alamat } = request.payload;
+    const {
+        nik, alamat, no_wa, wa_ortu, email, riwayat_penyakit, kegiatan_sementara,
+        asuransi, pakta, surat_izin, u_jas_kkn, kabupaten_id, kecamatan_id, desa_id, provinsi_id
+    } = request.payload;
     const fotoFile = request.payload.foto;
 
     try {
         // Ambil data mahasiswa lama, termasuk URL foto
         const [existingMahasiswaData] = await db.execute(
-            `SELECT foto 
-             FROM webapp_mahasiswa 
-             WHERE id = ?`,
+            `SELECT foto FROM webapp_mahasiswa WHERE id = ?`,
             [id]
         );
 
@@ -84,36 +106,37 @@ const updateMahasiswa = async (request, h) => {
             return h.response({ message: 'Mahasiswa tidak ditemukan' }).code(404);
         }
 
-        const oldFotoUrl = existingMahasiswaData[0].foto;
-
-        let newFotoUrl = oldFotoUrl;
+        let newFotoUrl = existingMahasiswaData[0].foto;
 
         if (fotoFile && fotoFile._data) {
-            // Hapus foto lama dari Cloudinary jika ada
-            if (oldFotoUrl) {
-                const publicIdMatch = oldFotoUrl.match(/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
+            if (newFotoUrl) {
+                const publicIdMatch = newFotoUrl.match(/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
                 const publicId = publicIdMatch ? publicIdMatch[1] : null;
 
                 if (publicId) {
                     await cloudinary.uploader.destroy(publicId, (error) => {
                         if (error) {
                             console.error('Error deleting photo from Cloudinary:', error);
-                        } 
+                        }
                     });
                 }
             }
 
             // Upload foto baru ke Cloudinary
             const uploadResult = await uploadProfileToCloudinary(fotoFile);
-            newFotoUrl = uploadResult.secure_url; // URL foto yang berhasil diunggah
+            newFotoUrl = uploadResult.secure_url;
         }
 
         // Update data mahasiswa di database
         const [result] = await db.execute(
-            `UPDATE webapp_mahasiswa
-             SET email = ?, no_wa = ?, alamat = ?, foto = ?
-             WHERE id = ?`,
-            [email, no_wa, alamat, newFotoUrl, id]
+            `UPDATE webapp_mahasiswa SET 
+                nik = ?, alamat = ?, no_wa = ?, wa_ortu = ?, email = ?, riwayat_penyakit = ?, kegiatan_sementara = ?,
+                asuransi = ?, pakta = ?, surat_izin = ?, u_jas_kkn = ?, kabupaten_id = ?, kecamatan_id = ?, desa_id = ?, provinsi_id = ?, foto = ?
+            WHERE id = ?`,
+            [
+                nik, alamat, no_wa, wa_ortu, email, riwayat_penyakit, kegiatan_sementara,
+                asuransi, pakta, surat_izin, u_jas_kkn, kabupaten_id, kecamatan_id, desa_id, provinsi_id, newFotoUrl, id
+            ]
         );
 
         if (result.affectedRows === 0) {

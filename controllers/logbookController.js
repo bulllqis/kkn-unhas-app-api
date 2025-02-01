@@ -40,7 +40,7 @@ const addLogbook = async (request, h) => {
     try {
         const [result] = await db.execute(
             `INSERT INTO webapp_logbook (nim_id, judul, tanggal, jam_mulai, jam_selesai, deskripsi, komentar, status, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?,'', 'belum ditinjau', NOW(6), NOW(6))`,
+            VALUES (?, ?, ?, ?, ?, ?,'', 'Pending', NOW(6), NOW(6))`,
             [nim, judul, tanggal, jam_mulai, jam_selesai, deskripsi]
         );
 
