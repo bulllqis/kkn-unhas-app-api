@@ -155,7 +155,7 @@ const locationRoutes = [
         path: '/provinsi',
         handler: async (request, h) => {
             try {
-                const [rows] = await db.query("SELECT id, nama_provinsi FROM webapp_provinsi");
+                const [rows] = await db.query("SELECT id , nama_provinsi as nama FROM webapp_provinsi");
                 return h.response(rows).code(200);
             } catch (err) {
                 console.error(err);
@@ -170,7 +170,7 @@ const locationRoutes = [
         handler: async (request, h) => {
             const { provId } = request.params;
             try {
-                const [rows] = await db.query("SELECT kode_kabupaten, nama_kabupaten FROM webapp_kabupaten WHERE kode_provinsi_id = ?", [provId]);
+                const [rows] = await db.query("SELECT kode_kabupaten as kode, nama_kabupaten as nama FROM webapp_kabupaten WHERE kode_provinsi_id = ?", [provId]);
                 return h.response(rows).code(200);
             } catch (err) {
                 console.error(err);
@@ -184,7 +184,7 @@ const locationRoutes = [
         handler: async (request, h) => {
             const { kabId } = request.params;
             try {
-                const [rows] = await db.query("SELECT kode_kecamatan, nama_kecamatan FROM webapp_kecamatan WHERE kode_kabupaten_id = ?", [kabId]);
+                const [rows] = await db.query("SELECT kode_kecamatan as kode, nama_kecamatan as nama FROM webapp_kecamatan WHERE kode_kabupaten_id = ?", [kabId]);
                 return h.response(rows).code(200);
             } catch (err) {
                 console.error(err);
@@ -198,7 +198,7 @@ const locationRoutes = [
         handler: async (request, h) => {
             const { kecId } = request.params;
             try {
-                const [rows] = await db.query("SELECT kode_desa, nama_desa FROM webapp_desa WHERE kode_kecamatan_id = ?", [kecId]);
+                const [rows] = await db.query("SELECT kode_desa as kode, nama_desa as nama FROM webapp_desa WHERE kode_kecamatan_id = ?", [kecId]);
                 return h.response(rows).code(200);
             } catch (err) {
                 console.error(err);
