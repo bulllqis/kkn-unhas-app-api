@@ -3,6 +3,7 @@ const mahasiswaController = require('../controllers/mahasiswaController');
 const logbookController = require('../controllers/logbookController');
 const dosenController = require('../controllers/dosenController');
 const beritaController = require('../controllers/beritaController');
+const db = require('../config/db');
 
 const authRoutes = [
     {
@@ -148,4 +149,64 @@ const notificationRoutes = [
     },
 ];
 
-module.exports = [...authRoutes, ...mahasiswaRoutes, ...logbookRoutes, ...dosenRoutes, ...beritaRoutes, ...notificationRoutes];
+const locationRoutes = [
+    {
+        method: 'GET',
+        path: '/provinsi',
+        handler: async (request, h) => {
+            try {
+                const [rows] = await db.query("SELECT id, nama_provinsi FROM webapp_provinsi");
+                return h.response(rows).code(200);
+            } catch (err) {
+                console.error(err);
+                return h.response({ error: "Gagal mengambil data" }).code(500);
+            }
+        }
+    },
+    
+    {
+        method: 'GET',
+        path: '/kabupaten/{provId}',
+        handler: async (request, h) => {
+            const { provId } = request.params;
+            try {
+                const [rows] = await db.query("SELECT kode_kabupaten, nama_kabupaten FROM webapp_kabupaten WHERE kode_provinsi_id = ?", [provId]);
+                return h.response(rows).code(200);
+            } catch (err) {
+                console.error(err);
+                return h.response({ error: "Gagal mengambil data" }).code(500);
+            }
+        }
+    },
+    {
+        method: 'GET',
+        path: '/kecamatan/{kabId}',
+        handler: async (request, h) => {
+            const { kabId } = request.params;
+            try {
+                const [rows] = await db.query("SELECT kode_kecamatan, nama_kecamatan FROM webapp_kecamatan WHERE kode_kabupaten_id = ?", [kabId]);
+                return h.response(rows).code(200);
+            } catch (err) {
+                console.error(err);
+                return h.response({ error: "Gagal mengambil data" }).code(500);
+            }
+        }
+    },
+    {
+        method: 'GET',
+        path: '/desa/{kecId}',
+        handler: async (request, h) => {
+            const { kecId } = request.params;
+            try {
+                const [rows] = await db.query("SELECT kode_desa, nama_desa FROM webapp_desa WHERE kode_kecamatan_id = ?", [kecId]);
+                return h.response(rows).code(200);
+            } catch (err) {
+                console.error(err);
+                return h.response({ error: "Gagal mengambil data" }).code(500);
+            }
+        }
+    },
+    
+];
+
+module.exports = [...authRoutes, ...mahasiswaRoutes, ...logbookRoutes, ...dosenRoutes, ...beritaRoutes, ...notificationRoutes, ...locationRoutes];
