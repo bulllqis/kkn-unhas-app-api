@@ -76,11 +76,8 @@ const login = async (request, h) => {
 
 const updatePassword = async (request, h) => {
     const { userId} = request.params;
-    const { oldPassword, newPassword, confirmPassword } = request.payload;
+    const { oldPassword, newPassword} = request.payload;
 
-    if (newPassword !== confirmPassword) {
-        return h.response({ message: 'Konfirmasi password tidak cocok' }).code(400);
-    }
 
     try {
         const result = await db.execute(
