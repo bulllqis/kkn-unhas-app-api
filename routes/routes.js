@@ -13,7 +13,7 @@ const authRoutes = [
     },
     {
         method: 'PATCH',
-        path: '/update-password/{userId}',
+        path: '/updatePassword/{userId}',
         handler: authController.updatePassword,
     },
 ];
