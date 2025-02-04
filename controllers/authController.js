@@ -107,7 +107,7 @@ const updatePassword = async (request, h) => {
             [newHashedPassword, userId]
         );
 
-        return h.response({ success: true, message: 'Password berhasil diperbarui' }).code(200);
+        return h.response({ success: true }).code(200);
     } catch (error) {
         console.error(error);
         return h.response({ message: 'Internal server error' }).code(500);
