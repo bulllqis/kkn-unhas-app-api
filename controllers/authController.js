@@ -98,9 +98,11 @@ const updatePassword = async (request, h) => {
         }
 
         const salt = crypto.randomBytes(16).toString('base64');
-        const iterations = 100000;
+        const iterations = 870000; // Jumlah iterasi untuk pbkdf2 (sesuai format di database)
+
+        // Hash password baru dengan salt dan iterasi yang sama seperti di format database
         const hashedBuffer = crypto.pbkdf2Sync(newPassword, salt, iterations, 32, 'sha256');
-        const newHashedPassword = `sha256$${iterations}$${salt}$${hashedBuffer.toString('base64')}`;
+        const newHashedPassword = `pbkdf2_sha256$${iterations}$${salt}$${hashedBuffer.toString('base64')}`;
 
         await db.execute(
             'UPDATE auth_user SET password = ? WHERE id = ?',
