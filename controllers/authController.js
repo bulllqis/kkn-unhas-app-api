@@ -67,7 +67,7 @@ const login = async (request, h) => {
         );
         const fullName = `${user.first_name} ${user.last_name}`;
 
-        return h.response({ success: true, userId: user.id, username: username, name: fullName, role: role }).code(200);
+        return h.response({ success: true, userId: user.id, username: user.username, name: fullName, role: role }).code(200);
     } catch (error) {
         console.error(error);
         return h.response({ message: 'Internal server error' }).code(500);
