@@ -99,6 +99,7 @@ const updateMahasiswa = async (request, h) => {
     } = request.payload;
     const fotoFile = request.payload.foto;
 
+    
     try {
         // Ambil data mahasiswa lama, termasuk URL foto
         const [existingMahasiswaData] = await db.execute(
@@ -109,12 +110,11 @@ const updateMahasiswa = async (request, h) => {
         if (existingMahasiswaData.length === 0) {
             return h.response({ message: 'Mahasiswa tidak ditemukan' }).code(404);
         }
+        const oldFotoUrl = existingLogbookData[0].foto;
 
-        let newFotoUrl = existingMahasiswaData[0].foto;
-
-        if (fotoFile && fotoFile._data) {
-            if (newFotoUrl) {
-                const publicIdMatch = newFotoUrl.match(/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
+        if (fotoFile) {
+            if (oldFotoUrl) {
+                const publicIdMatch = oldFotoUrl.match(/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
                 const publicId = publicIdMatch ? publicIdMatch[1] : null;
 
                 if (publicId) {
