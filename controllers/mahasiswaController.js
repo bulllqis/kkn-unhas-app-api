@@ -97,7 +97,7 @@ const updateMahasiswa = async (request, h) => {
         nik, alamat, no_wa, wa_ortu, email, riwayat_penyakit, kegiatan_sementara,
         asuransi, pakta, surat_izin, u_jas_kkn, kabupaten_id, kecamatan_id, desa_id, provinsi_id
     } = request.payload;
-    const fotoFile = request.payload.foto;
+    const foto = request.payload.foto;
 
     try {
         // Ambil data mahasiswa lama, termasuk URL foto
@@ -110,10 +110,10 @@ const updateMahasiswa = async (request, h) => {
             return h.response({ message: 'Mahasiswa tidak ditemukan' }).code(404);
         }
 
-        const oldFotoUrl = existingMahasiswaData[0].foto;
+        const newFotoUrl = existingMahasiswaData[0].foto;
 
         if (fotoFile) {
-            if (oldFotoUrl) {
+            if (newFotoUrl) {
                 const publicIdMatch = newFotoUrl.match(/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
                 const publicId = publicIdMatch ? publicIdMatch[1] : null;
 
@@ -127,8 +127,8 @@ const updateMahasiswa = async (request, h) => {
             }
 
             // Upload foto baru ke Cloudinary
-            const uploadResult = await uploadProfileToCloudinary(fotoFile);
-            const newFotoUrl = uploadResult.secure_url;
+            const uploadResult = await uploadProfileToCloudinary(foto);
+            newFotoUrl = uploadResult.secure_url;
         }
 
         // Update data mahasiswa di database
