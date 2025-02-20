@@ -112,7 +112,7 @@ const updateMahasiswa = async (request, h) => {
 
         const newFotoUrl = existingMahasiswaData[0].foto;
 
-        if (fotoFile) {
+        if (foto) {
             if (newFotoUrl) {
                 const publicIdMatch = newFotoUrl.match(/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
                 const publicId = publicIdMatch ? publicIdMatch[1] : null;
