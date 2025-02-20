@@ -110,7 +110,7 @@ const updateMahasiswa = async (request, h) => {
         if (existingMahasiswaData.length === 0) {
             return h.response({ message: 'Mahasiswa tidak ditemukan' }).code(404);
         }
-        const oldFotoUrl = existingLogbookData[0].foto;
+        const oldFotoUrl = existingMahasiswaData[0].foto;
 
         if (fotoFile) {
             if (oldFotoUrl) {
