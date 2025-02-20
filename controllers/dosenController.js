@@ -69,7 +69,7 @@ const updateDosen = async (request, h) => {
         kabupaten_id, kecamatan_id, desa_id, provinsi_id 
     } = request.payload;
 
-    const fotoFile = request.payload.foto;
+    const foto = request.payload.foto;
 
     try {
 
@@ -87,7 +87,7 @@ const updateDosen = async (request, h) => {
         const oldFotoUrl = existingDosenData[0].foto;
 
         let newFotoUrl = oldFotoUrl;
-        if (fotoFile && fotoFile._data) {
+        if (foto) {
                     // Hapus foto lama dari Cloudinary jika ada
             if (oldFotoUrl) {
                 const publicIdMatch = oldFotoUrl.match(/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
@@ -103,7 +103,7 @@ const updateDosen = async (request, h) => {
             }
         
             // Upload foto baru ke Cloudinary
-            const uploadResult = await uploadProfileToCloudinary(fotoFile);
+            const uploadResult = await uploadProfileToCloudinary(foto);
             newFotoUrl = uploadResult.secure_url; 
         }
 
