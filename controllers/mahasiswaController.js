@@ -110,10 +110,10 @@ const updateMahasiswa = async (request, h) => {
             return h.response({ message: 'Mahasiswa tidak ditemukan' }).code(404);
         }
 
-        let newFotoUrl = existingMahasiswaData[0].foto;
+        const oldFotoUrl = existingMahasiswaData[0].foto;
 
         if (fotoFile) {
-            if (newFotoUrl) {
+            if (oldFotoUrl) {
                 const publicIdMatch = newFotoUrl.match(/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
                 const publicId = publicIdMatch ? publicIdMatch[1] : null;
 
@@ -128,7 +128,7 @@ const updateMahasiswa = async (request, h) => {
 
             // Upload foto baru ke Cloudinary
             const uploadResult = await uploadProfileToCloudinary(fotoFile);
-            newFotoUrl = uploadResult.secure_url;
+            const newFotoUrl = uploadResult.secure_url;
         }
 
         // Update data mahasiswa di database
