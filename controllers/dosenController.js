@@ -84,13 +84,12 @@ const updateDosen = async (request, h) => {
             return h.response({ message: 'Dosen tidak ditemukan' }).code(404);
         }
 
-        const oldFotoUrl = existingDosenData[0].foto;
+        let newFotoUrl = existingDosenData[0].foto;
 
-        let newFotoUrl = oldFotoUrl;
         if (foto) {
                     // Hapus foto lama dari Cloudinary jika ada
-            if (oldFotoUrl) {
-                const publicIdMatch = oldFotoUrl.match(/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
+            if (newFotoUrl) {
+                const publicIdMatch = newFotoUrl.match(/upload\/(?:v\d+\/)?(.+)\.[a-z]+$/i);
                 const publicId = publicIdMatch ? publicIdMatch[1] : null;
 
                 if (publicId) {

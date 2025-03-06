@@ -97,10 +97,8 @@ const updatePassword = async (request, h) => {
             return h.response({ message: 'Password lama salah' }).code(401);
         }
 
-        const salt = crypto.randomBytes(16).toString('base64');
-        const iterations = 870000; // Jumlah iterasi untuk pbkdf2 (sesuai format di database)
-
-        // Hash password baru dengan salt dan iterasi yang sama seperti di format database
+        const salt = crypto.randomBytes(16).toString('base64').replace(/=/g, '');
+        const iterations = 870000; 
         const hashedBuffer = crypto.pbkdf2Sync(newPassword, salt, iterations, 32, 'sha256');
         const newHashedPassword = `pbkdf2_sha256$${iterations}$${salt}$${hashedBuffer.toString('base64')}`;
 
